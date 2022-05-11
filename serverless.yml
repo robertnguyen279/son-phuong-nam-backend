@@ -1,4 +1,4 @@
-service: twenty-one-cen-backend
+service: son-phuong-nam-backend
 configValidationMode: off
 frameworkVersion: '3'
 

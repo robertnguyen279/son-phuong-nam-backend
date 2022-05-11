@@ -8,7 +8,6 @@ import {
   getAllCategories,
   deleteCategory,
   getByUrlString
-  // countAvailable
 } from 'controllers/product.controller';
 
 import authMiddleware from 'middlewares/auth.middleware';

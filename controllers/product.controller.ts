@@ -1,15 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import Product from 'models/product.model';
 import Category from 'models/category.model';
-import Item from 'models/item.model';
 import { filterRequestBody, parseQueryText } from 'services/common.service';
 import { CategoryDocument } from 'types/category.type';
 import mongoose from 'mongoose';
 import { ProductDocument, FindProductArgs } from 'types/product.type';
 import { NotFoundError } from 'services/error.service';
 
-const createProductKeys = ['name', 'description', 'pictures*', 'price', 'available*', 'category*', 'discount', 'code'];
-const updateProductKeys = ['name', 'description', 'pictures', 'price', 'available', 'category', 'discount', 'code'];
+const createProductKeys = ['name', 'description', 'picture*', 'category*', 'discount'];
+const updateProductKeys = ['name', 'description', 'picture', 'category', 'discount'];
 
 export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
   const session = await mongoose.startSession();
@@ -17,10 +16,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
 
   await session.withTransaction(async () => {
     try {
-      const { name, description, pictures, price, available, category, discount, code } = filterRequestBody(
-        createProductKeys,
-        req.body
-      );
+      const { name, description, picture, category } = filterRequestBody(createProductKeys, req.body);
 
       let categoryDoc: CategoryDocument | null;
 
@@ -29,19 +25,12 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
         categoryDoc = new Category({ name: category });
         await categoryDoc.save({ session });
       }
-      const availableDocs = available.map((item) => new Item({ ...item, product: productId }));
-      const itemDocs = await Item.insertMany(availableDocs, { session });
-      const availableIds = itemDocs.map((item) => item._id);
 
       const product = new Product({
         _id: productId,
         name,
         description,
-        pictures,
-        available: availableIds,
-        price,
-        code,
-        discount: discount ? discount : 0,
+        picture,
         category: categoryDoc._id
       });
 
@@ -68,7 +57,6 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
       filterRequestBody(updateProductKeys, req.body);
 
       const product = (await Product.findById(id)) as ProductDocument;
-      const availableIds: Array<any> = [];
 
       if (req.body.category) {
         let category: CategoryDocument | null;
@@ -81,33 +69,8 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
         product.category = category._id;
       }
 
-      if (req.body.available) {
-        await Promise.all(
-          req.body.available.map(async (item) => {
-            if (item._id) {
-              await Item.findOneAndUpdate(
-                { _id: item._id },
-                {
-                  size: item.size,
-                  quantity: item.quantity,
-                  color: item.color || undefined,
-                  product: product._id
-                }
-              );
-              availableIds.push(item._id);
-            } else {
-              const newItem = new Item({ ...item, product: product._id });
-              await newItem.save();
-              availableIds.push(newItem._id);
-            }
-          })
-        );
-      }
-
-      product.available = availableIds;
-
       for (const key in req.body) {
-        if (key !== 'category' && key !== 'available') {
+        if (key !== 'category') {
           product[key] = req.body[key];
         }
       }
@@ -215,7 +178,6 @@ export const getByUrlString = async (req: Request, res: Response, next: NextFunc
 
     const product = await Product.findOne({ urlString })
       .populate({ path: 'category', select: 'name' })
-      .populate({ path: 'available', select: 'size color quantity' })
       .select('-noToneName');
 
     if (!product) {
@@ -225,7 +187,27 @@ export const getByUrlString = async (req: Request, res: Response, next: NextFunc
     res.send({
       statusCode: 200,
       message: 'Get product successfully',
-      product: { ...product._doc, actualPrice: product.actualPrice, totalQuantity: product.totalQuantity }
+      product
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProductById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id;
+
+    const product = await Product.findById(id).populate({ path: 'category', select: 'name' }).select('-noToneName');
+
+    if (!product) {
+      throw new NotFoundError('Product');
+    }
+
+    res.send({
+      statusCode: 200,
+      message: 'Get product successfully',
+      product
     });
   } catch (error) {
     next(error);

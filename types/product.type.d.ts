@@ -3,21 +3,14 @@ import { ObjectId } from 'mongodb';
 
 export interface Product {
   name: string;
-  code: string;
   noToneName: string;
   description: string;
   urlString: string;
-  discount: number;
-  pictures: Array<string>;
-  price: number;
-  sold: number;
+  picture: string;
   category: ObjectId;
-  available: Array<ObjectId>;
 }
 
 export interface ProductDocument extends Product, Document {
-  totalQuantity: number;
-  actualPrice: number;
   _doc: ProductDocument;
 }
 

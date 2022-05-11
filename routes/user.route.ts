@@ -9,9 +9,6 @@ import {
   updateUserBySuperviser,
   deleteUserBySuperviser,
   getUsers,
-  addContact,
-  updateContact,
-  deleteContact,
   getAccessToken,
   logoutUser,
   updateUserByAdmin,
@@ -26,11 +23,8 @@ const router = express.Router();
 
 router.post('/', createUser);
 router.post('/createByAdmin', authMiddleware, superviserMiddleware, adminMiddleware, createUserByAdmin);
-router.post('/contact', authMiddleware, addContact);
 router.post('/token', getAccessToken);
 router.post('/loginByThirdParty', loginByThirdParty);
-router.patch('/contact/:id', authMiddleware, updateContact);
-router.delete('/contact/:id', authMiddleware, deleteContact);
 router.delete('/logout', authMiddleware, logoutUser);
 router.patch('/', authMiddleware, updateUser);
 router.post('/login', loginUser);

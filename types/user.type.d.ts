@@ -1,21 +1,10 @@
 import { Document, Model } from 'mongoose';
-import { ObjectId } from 'mongodb';
 
 export enum Role {
   user = 'user',
   superviser = 'superviser',
   admin = 'admin'
 }
-
-export type UserContactDetail = {
-  _id: ObjectId;
-  province: string;
-  district: string;
-  addressDetail: string;
-  phone: number;
-  firstName: string;
-  lastName: string;
-};
 
 export interface User {
   firstName: string;
@@ -25,9 +14,7 @@ export interface User {
   avatarUrl?: string;
   role: Role;
   phone: number;
-  birthday?: Date;
   refreshToken: string;
-  contactDetails?: Array<UserContactDetail>;
   createdAt?: Date;
   updatedAt?: Date;
 }

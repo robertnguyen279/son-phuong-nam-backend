@@ -2,17 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import User from 'models/user.model';
 import { filterRequestBody } from 'services/common.service';
 import { UserDocument } from 'types/user.type';
-import { Types } from 'mongoose';
 import validator from 'validator';
-import { NotFoundError, WrongPasswordError, InvalidBodyError, InvalidQueryError } from 'services/error.service';
+import { NotFoundError, WrongPasswordError, InvalidQueryError } from 'services/error.service';
 import axios from 'axios';
 
-const signupKeys = ['firstName', 'lastName', 'email', 'password*', 'phone', 'avatarUrl', 'birthday'];
-const updateKeys = ['firstName', 'lastName', 'email', 'password', 'phone', 'avatarUrl', 'birthday'];
+const signupKeys = ['firstName', 'lastName', 'email', 'password*', 'phone'];
+const updateKeys = ['firstName', 'lastName', 'email', 'password', 'phone'];
 const signupByThirdPartyKeys = ['firstName', 'lastName', 'email', 'avatarUrl', 'thirdPartyToken'];
-const signupByAdminKeys = ['firstName', 'lastName', 'email', 'password', 'phone', 'avatarUrl', 'birthday', 'role'];
+const signupByAdminKeys = ['firstName', 'lastName', 'email', 'password', 'phone', 'role'];
 const loginKeys = ['emailOrPhone', 'password'];
-const addressKeys = ['province', 'district', 'addressDetail', 'phone'];
 
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -232,73 +230,6 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-export const addContact = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const user = req.authUser as UserDocument;
-    filterRequestBody(addressKeys, req.body);
-
-    const _id = new Types.ObjectId();
-
-    if (!req.body.firstName && !req.body.lastName) {
-      req.body.firstName = user.firstName;
-      req.body.lastName = user.lastName;
-    }
-
-    if (!req.body.phone) {
-      req.body.phone = user.phone;
-    }
-
-    const contactDetail = {
-      _id,
-      ...req.body
-    };
-
-    user.contactDetails?.push(contactDetail);
-    await user.save();
-
-    return res.status(201).send({ message: 'Add contact successfully', statusCode: 201 });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateContact = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const id = req.params.id;
-    const user = req.authUser as UserDocument;
-    filterRequestBody(addressKeys, req.body);
-
-    const updateArgs = {};
-
-    for (const key in req.body) {
-      updateArgs[`contactDetails.$.${key}`] = req.body[key];
-    }
-
-    if (req.body.phone && !validator.isMobilePhone(req.body.phone.toString(), ['vi-VN'])) {
-      throw new InvalidBodyError('phone');
-    }
-
-    await User.findOneAndUpdate({ _id: user._id, 'contactDetails._id': id }, updateArgs);
-
-    return res.send({ message: 'Contact updated', statusCode: 200 });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const deleteContact = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const id = req.params.id;
-    const user = req.authUser as UserDocument;
-
-    await User.findOneAndUpdate({ _id: user._id }, { $pull: { contactDetails: { _id: id } } });
-
-    return res.send({ message: 'Contact deleted', statusCode: 200 });
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getAccessToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { token } = filterRequestBody(['token'], req.body);
@@ -325,20 +256,6 @@ export const logoutUser = async (req: Request, res: Response, next: NextFunction
 
     await User.updateOne({ _id: user._id }, { $unset: { refreshToken: 1 } });
     return res.send({ message: 'Logout successfully', statusCode: 200 });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getGoogleUser = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const user = req.authUser as UserDocument;
-    console.log(req.user);
-    const accessToken = await user.generateAccessToken();
-    const refreshToken = await user.generateRefreshToken();
-    await user.save();
-
-    res.send({ statusCode: 200, message: 'Get Google user successfully', user, accessToken, refreshToken });
   } catch (error) {
     next(error);
   }

@@ -1,4 +1,4 @@
-import { Schema, model, models, Types } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 import { UserDocument, UserModel } from 'types/user.type';
 import { NotFoundError, UnauthorizedError } from 'services/error.service';
 import bcrypt from 'bcryptjs';
@@ -55,57 +55,11 @@ const userSchema = new Schema(
         message: 'Invalid password.'
       }
     },
-    avatarUrl: {
-      type: String
-    },
     role: {
       type: String,
       enum: ['user', 'superviser', 'admin'],
       required: true,
       default: 'user'
-    },
-    contactDetails: [
-      {
-        _id: {
-          type: Types.ObjectId,
-          required: true
-        },
-        province: {
-          type: String,
-          required: true,
-          trim: true
-        },
-        district: {
-          type: String,
-          required: true,
-          trim: true
-        },
-        addressDetail: {
-          type: String,
-          required: true,
-          trim: true
-        },
-        phone: {
-          type: Number,
-          validate: {
-            validator: (phone: number) => {
-              return validator.isMobilePhone(phone.toString(), ['vi-VN']);
-            },
-            message: 'Phone is invalid'
-          }
-        },
-        firstName: {
-          type: String,
-          required: true
-        },
-        lastName: {
-          type: String,
-          required: true
-        }
-      }
-    ],
-    birthday: {
-      type: Date
     },
     refreshToken: {
       type: String
