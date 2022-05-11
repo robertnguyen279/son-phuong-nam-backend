@@ -2,8 +2,8 @@ import { Document, Model } from 'mongoose';
 
 export interface SiteInfo {
   phone: number;
-  zalo: number;
-  facebook: string;
+  taxCode: number;
+  address: string;
   email: string;
 }
 

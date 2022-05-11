@@ -3,7 +3,7 @@ import SiteInfo from 'models/site.model';
 import { filterRequestBody } from 'services/common.service';
 import { UnprocesableError } from 'services/error.service';
 
-const validSiteInfoKeys = ['phone', 'email', 'zalo', 'facebook'];
+const validSiteInfoKeys = ['phone', 'email', 'address', 'taxCode'];
 
 export const createSiteInfo = async (req: Request, res: Response, next: NextFunction) => {
   try {

@@ -5,14 +5,8 @@ import { SiteInfoDocument, SiteInfoModel } from 'types/site.type';
 const siteSchema = new Schema(
   {
     phone: {
-      type: Number,
-      required: true,
-      validate: {
-        validator: (phone: number) => {
-          return validator.isMobilePhone(phone.toString(), ['vi-VN']);
-        },
-        message: 'Phone is invalid'
-      }
+      type: String,
+      required: true
     },
     email: {
       type: String,
@@ -24,17 +18,11 @@ const siteSchema = new Schema(
         message: 'Email is invalid'
       }
     },
-    zalo: {
-      type: Number,
-      required: true,
-      validate: {
-        validator: (phone: number) => {
-          return validator.isMobilePhone(phone.toString(), ['vi-VN']);
-        },
-        message: 'Phone is invalid'
-      }
+    address: {
+      type: String,
+      required: true
     },
-    facebook: {
+    taxCode: {
       type: String,
       required: true
     }
