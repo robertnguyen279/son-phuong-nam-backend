@@ -2,4 +2,3 @@ node_modules
 .serverless
 .webpack
 .webpackCache
-env.yml
